@@ -1,9 +1,7 @@
-import argparse
 import os
 import socket
 import threading
 import time
-import webbrowser
 
 import uvicorn
 
@@ -54,7 +52,7 @@ def _close_when_edits_finish(window, pending_edits: dict) -> None:
     window.destroy()
 
 
-def run_window() -> None:
+def main() -> None:
     import webview
 
     from .server import pending_edits
@@ -83,26 +81,6 @@ def run_window() -> None:
     window.events.closing += on_closing
     webview.start(debug=os.environ.get("REELS_DEBUG") == "1")
     server.should_exit = True
-
-
-def run_browser(port: int, open_browser: bool) -> None:
-    if open_browser:
-        threading.Timer(1.0, webbrowser.open, args=(f"http://127.0.0.1:{port}",)).start()
-    from .server import app
-
-    uvicorn.run(app, host="127.0.0.1", port=port)
-
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description=f"Run {APP_NAME}.")
-    parser.add_argument("--browser", action="store_true", help="serve the app to a browser instead of opening a window")
-    parser.add_argument("--port", type=int, default=8790, help="port for --browser mode")
-    parser.add_argument("--no-browser", action="store_true", help="with --browser, skip opening a browser tab")
-    args = parser.parse_args()
-    if args.browser:
-        run_browser(args.port, not args.no_browser)
-    else:
-        run_window()
 
 
 if __name__ == "__main__":
