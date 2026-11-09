@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <radialGradient id="glow" cx="22%" cy="100%" r="115%">
+      <stop offset="0" stop-color="#FFDD55"/>
+      <stop offset="0.14" stop-color="#FFC347"/>
+      <stop offset="0.36" stop-color="#FA7E1E"/>
+      <stop offset="0.56" stop-color="#E1306C"/>
+      <stop offset="0.78" stop-color="#C13584"/>
+      <stop offset="1" stop-color="#6A3DCB"/>
+    </radialGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="play" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#FA7E1E"/>
+      <stop offset="0.5" stop-color="#E1306C"/>
+      <stop offset="1" stop-color="#833AB4"/>
+    </linearGradient>
+  </defs>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#glow)"/>
+  <rect x="100" y="100" width="824" height="824" rx="185" fill="url(#sheen)"/>
+  <g transform="translate(490 530) scale(1.18)">
+    <rect x="-118" y="-250" width="236" height="420" rx="26" fill="#FFFFFF" fill-opacity="0.38" transform="rotate(14) translate(70 0)"/>
+    <rect x="-118" y="-250" width="236" height="420" rx="26" fill="#FFFFFF" fill-opacity="0.62" transform="rotate(5) translate(30 0)"/>
+    <rect x="-118" y="-250" width="236" height="420" rx="26" fill="#FFFFFF" transform="rotate(-5) translate(-20 0)"/>
+    <path d="M-60 -95 L50 -40 L-60 15 Z" fill="url(#play)" stroke="url(#play)" stroke-width="14" stroke-linejoin="round" transform="rotate(-5) translate(-14 0)"/>
+  </g>
+</svg>

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reels manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar" id="sidebar" aria-label="Library"></aside>
+    <main class="main" id="main"></main>
+  </div>
+
+  <div class="selection-bar" id="selection-bar" hidden></div>
+  <div class="menu" id="menu" role="menu" hidden></div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <dialog class="viewer" id="viewer" aria-label="Reel" tabindex="-1"></dialog>
+
+  <dialog class="prompt" id="confirm-prompt" tabindex="-1">
+    <form method="dialog" id="confirm-prompt-form">
+      <h2 id="confirm-prompt-title"></h2>
+      <p id="confirm-prompt-text"></p>
+      <div class="prompt-actions">
+        <button type="button" class="btn btn-quiet" id="confirm-prompt-cancel">Cancel</button>
+        <button type="submit" class="btn btn-danger" id="confirm-prompt-submit"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="prompt" id="name-prompt">
+    <form method="dialog" id="name-prompt-form">
+      <h2 id="name-prompt-title"></h2>
+      <p id="name-prompt-hint"></p>
+      <label for="name-prompt-input">Name</label>
+      <input id="name-prompt-input" name="name" required maxlength="60" autocomplete="off">
+      <div class="prompt-actions">
+        <button type="button" class="btn btn-quiet" id="name-prompt-cancel">Cancel</button>
+        <button type="submit" class="btn btn-ink" id="name-prompt-submit"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <svg width="0" height="0" aria-hidden="true" style="position:absolute">
+    <symbol id="loop" viewBox="0 0 100 160" preserveAspectRatio="none">
+      <path d="M52 4 C84 3 97 22 96 60 C95 100 97 140 70 154 C46 162 14 158 6 132 C0 104 3 62 5 34 C7 12 26 5 58 7 C70 8 78 10 83 15"/>
+    </symbol>
+  </svg>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
