@@ -905,6 +905,13 @@ button, input, textarea { font: inherit; color: inherit; }
 
 .viewer-actions .btn { flex: 1 1 auto; }
 
+.viewer-actions .btn-icon { flex: 0 0 auto; width: 42px; padding: 0; }
+
+.btn-icon .icon { width: 19px; height: 19px; }
+
+.btn-unsave .icon { fill: currentColor; }
+
+
 .viewer-close, .viewer-nav {
   display: grid;
   place-items: center;

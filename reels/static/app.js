@@ -356,6 +356,23 @@ function downloadMany(pks, name) {
   form.remove();
 }
 
+function saveFrame(m, video) {
+  if (!video.videoWidth) return toast("The video has not loaded a frame yet.", { error: true });
+  const canvas = h("canvas", { width: video.videoWidth, height: video.videoHeight });
+  canvas.getContext("2d").drawImage(video, 0, 0);
+  const seconds = video.currentTime.toFixed(2).replace(".", "-");
+  const name = `${[m.username, m.code || m.pk].filter(Boolean).join("_")}_${seconds}s.png`.replace(/[^A-Za-z0-9._-]/g, "_");
+  canvas.toBlob((blob) => {
+    const url = URL.createObjectURL(blob);
+    const link = h("a", { href: url, download: name });
+    document.body.append(link);
+    link.click();
+    link.remove();
+    // The app window shows a modal save panel before it reads the blob, so revoking right away would break the download.
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }, "image/png");
+}
+
 /* Sync */
 
 const SYNC_POLL_MS = 700;
@@ -1153,6 +1170,8 @@ const ICON_PATHS = {
   next: "M9 5 L16 12 L9 19",
   close: "M6 6 L18 18 M18 6 L6 18",
   slides: "M8 4 H18 A2 2 0 0 1 20 6 V16 M4 8 H14 A2 2 0 0 1 16 10 V20 H6 A2 2 0 0 1 4 18 Z",
+  download: "M12 4 V15 M7 10 L12 15 L17 10 M5 20 H19",
+  bookmark: "M6 4 A1 1 0 0 1 7 3 H17 A1 1 0 0 1 18 4 V21 L12 16 L6 21 Z",
 };
 
 function icon(name) {
@@ -1522,8 +1541,18 @@ function renderViewer() {
         h(
           "div",
           { class: "viewer-actions" },
-          h("button", { type: "button", class: "btn btn-ink", onClick: () => downloadOne(m.pk) }, "Download"),
-          h("button", { type: "button", class: "btn btn-line danger", onClick: () => unsavePosts([m.pk]) }, "Unsave"),
+          h(
+            "button",
+            { type: "button", class: "btn btn-line btn-icon", "aria-label": "Download", title: "Download", onClick: () => downloadOne(m.pk) },
+            icon("download"),
+          ),
+          h(
+            "button",
+            { type: "button", class: "btn btn-line btn-icon btn-unsave", "aria-label": "Unsave", title: "Unsave", onClick: () => unsavePosts([m.pk]) },
+            icon("bookmark"),
+          ),
+          m.slides[slide].isVideo &&
+            h("button", { type: "button", class: "btn btn-line", onClick: () => saveFrame(m, media) }, "Save frame"),
           m.code &&
             h("a", { class: "btn btn-line", href: `https://www.instagram.com/reel/${m.code}/`, target: "_blank", rel: "noopener" }, "Open in Instagram"),
         ),
