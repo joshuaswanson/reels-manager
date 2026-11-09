@@ -21,7 +21,7 @@ const state = {
   username: null,
   library: null,
   byPk: new Map(),
-  view: { kind: "all" },
+  view: { kind: "uncollected" },
   reelsOnly: false,
   query: "",
   selecting: false,
@@ -93,7 +93,7 @@ function setLibrary(library) {
   for (const c of library.collections) {
     for (const pk of c.pks) state.byPk.get(pk)?.collections.add(c.id);
   }
-  if (state.view.kind === "collection" && !collectionById(state.view.id)) state.view = { kind: "all" };
+  if (state.view.kind === "collection" && !collectionById(state.view.id)) state.view = { kind: "uncollected" };
 }
 
 const collectionById = (id) => state.library?.collections.find((c) => c.id === id);
@@ -580,8 +580,8 @@ function renderSidebar() {
     h(
       "nav",
       { class: "nav-group", "aria-label": "Library" },
-      navItem({ kind: "all" }, "All saved", countFor({ kind: "all" })),
       navItem({ kind: "uncollected" }, "Not in a collection", countFor({ kind: "uncollected" })),
+      navItem({ kind: "all" }, "All saved", countFor({ kind: "all" })),
     ),
     h(
       "div",
