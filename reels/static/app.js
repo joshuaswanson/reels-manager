@@ -693,6 +693,10 @@ function renderEmpty(title, text, action) {
   return h("div", { class: "empty" }, h("h2", {}, title), h("p", {}, text), action);
 }
 
+function profileLink(username, label, attrs = {}) {
+  return h("a", { ...attrs, href: `https://www.instagram.com/${encodeURIComponent(username)}/`, target: "_blank", rel: "noopener" }, label);
+}
+
 function tile(m) {
   const duration = formatDuration(m.duration);
   const frame = h(
@@ -1294,7 +1298,13 @@ function commentItem(pk, comment, replyPage) {
   return h(
     "li",
     { class: "comment" },
-    h("p", { class: "comment-text" }, h("strong", {}, comment.username || "unknown"), " ", comment.text),
+    h(
+      "p",
+      { class: "comment-text" },
+      comment.username ? profileLink(comment.username, comment.username, { class: "comment-user" }) : h("strong", {}, "unknown"),
+      " ",
+      comment.text,
+    ),
     h(
       "p",
       { class: "comment-meta" },
@@ -1494,7 +1504,7 @@ function renderViewer() {
       h(
         "div",
         { class: "viewer-panel" },
-        h("h2", { class: "viewer-user" }, m.username ? `@${m.username}` : "Unknown account"),
+        h("h2", { class: "viewer-user" }, m.username ? profileLink(m.username, `@${m.username}`) : "Unknown account"),
         meta.length > 0 && h("p", { class: "viewer-meta" }, meta.join(", ")),
         h(
           "div",
