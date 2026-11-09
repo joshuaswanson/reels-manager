@@ -1109,6 +1109,12 @@ document.addEventListener("keydown", (event) => {
   el.dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: event.shiftKey, metaKey: event.metaKey }));
 });
 
+// WebKit shows :focus-visible after clicks and after a dialog returns focus, which reads as a second selection style.
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Tab") document.body.classList.add("tabbing");
+});
+document.addEventListener("pointerdown", () => document.body.classList.remove("tabbing"));
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && pointerDrag?.started) {
     endDrag();

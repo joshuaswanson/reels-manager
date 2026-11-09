@@ -388,7 +388,7 @@ button, input, textarea { font: inherit; color: inherit; }
 }
 
 .tile:focus-visible { outline: none; }
-.tile:focus-visible .tile-frame { outline: 3px solid var(--ink); outline-offset: 3px; }
+.tabbing .tile:focus-visible .tile-frame { outline: 3px solid var(--ink); outline-offset: 3px; }
 
 .tile .mark {
   position: absolute;
