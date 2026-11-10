@@ -34,6 +34,7 @@ const state = {
   lastStreamedPk: null,
   arriving: new Set(),
   sync: { running: false, message: "", error: null },
+  textIndex: { running: false, done: 0, total: 0 },
 };
 
 class ApiError extends Error {
@@ -112,7 +113,7 @@ function applyFilters(items) {
   return items.filter((m) => {
     if (state.reelsOnly && !m.isReel) return false;
     if (!query) return true;
-    return `${m.username} ${m.fullName} ${m.caption}`.toLowerCase().includes(query);
+    return `${m.username} ${m.fullName} ${m.caption} ${m.screenText ?? ""}`.toLowerCase().includes(query);
   });
 }
 
@@ -446,8 +447,39 @@ async function pollSync() {
   state.arriving.clear();
   setLibrary(await api("/api/library"));
   refreshDuringSync();
+  if (!status.error) startTextIndex();
   if (status.error) toast(status.error, { error: true, duration: 8000 });
   else toast(status.message);
+}
+
+const TEXT_INDEX_POLL_MS = 2000;
+let textIndexCursor = 0;
+
+async function startTextIndex() {
+  if (state.textIndex.running) return;
+  const started = await api("/api/text-index", { method: "POST" }).catch(() => null);
+  if (!started?.running) return;
+  state.textIndex = started;
+  textIndexCursor = 0;
+  renderSidebar();
+  setTimeout(pollTextIndex, TEXT_INDEX_POLL_MS);
+}
+
+async function pollTextIndex() {
+  const status = await api(`/api/text-index?since=${textIndexCursor}`).catch(() => null);
+  if (!status) return;
+  state.textIndex = status;
+  textIndexCursor = status.cursor;
+  for (const { pk, text } of status.read) {
+    const m = state.byPk.get(pk);
+    if (m) m.screenText = text;
+  }
+  renderSidebar();
+  if (state.query.trim() && status.read.length && $("#sheet")) {
+    renderGrid();
+    renderSummary();
+  }
+  if (status.running) setTimeout(pollTextIndex, TEXT_INDEX_POLL_MS);
 }
 
 /* Selection */
@@ -620,6 +652,12 @@ function renderSidebar() {
       { class: "sidebar-footer" },
       h("button", { type: "button", class: "btn btn-sync", disabled: sync.running, onClick: startSync }, syncLabel),
       h("p", { class: `sync-status${sync.error && !sync.running ? " error" : ""}`, "aria-live": "polite" }, statusText),
+      state.textIndex.running &&
+        h(
+          "p",
+          { class: "sync-status" },
+          `Reading on-screen text, ${state.textIndex.done.toLocaleString()} of ${plural(state.textIndex.total, "post")}`,
+        ),
       h(
         "div",
         { class: "account" },
@@ -788,8 +826,8 @@ function renderMain() {
   const search = h("input", {
     type: "search",
     class: "search",
-    placeholder: "Search captions and accounts",
-    "aria-label": "Search captions and accounts",
+    placeholder: "Search captions, accounts, and on-screen text",
+    "aria-label": "Search captions, accounts, and on-screen text",
     value: state.query,
     onInput: (event) => {
       state.query = event.target.value;
@@ -1604,6 +1642,7 @@ async function boot() {
     setLibrary(await api("/api/library"));
     state.sync = await api("/api/sync");
     if (state.sync.running) pollSync();
+    else startTextIndex();
   }
   render();
 }

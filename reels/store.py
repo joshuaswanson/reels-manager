@@ -29,6 +29,7 @@ create table if not exists membership (
 );
 create table if not exists meta (key text primary key, value text);
 create table if not exists collection_names (id text primary key, name text not null);
+create table if not exists screen_text (pk text primary key, text text not null);
 """
 
 for directory in (DATA_DIR, THUMBS_DIR, FILES_DIR):
@@ -58,6 +59,11 @@ def slides(row) -> list[dict]:
     if row["slides"]:
         return json.loads(row["slides"])
     return [{"thumb_url": row["thumb_url"], "image_url": row["image_url"], "video_url": row["video_url"]}]
+
+
+def file_path(pk: str, slide: int, is_video: bool) -> Path:
+    stem = pk if slide == 0 else f"{pk}_{slide}"
+    return FILES_DIR / f"{stem}.{'mp4' if is_video else 'jpg'}"
 
 
 def load_session() -> dict | None:
@@ -115,7 +121,11 @@ def to_client(row) -> dict:
 
 def library() -> dict:
     with connect() as conn:
-        media = [to_client(row) for row in conn.execute("select * from media order by saved_rank")]
+        texts = {row["pk"]: row["text"] for row in conn.execute("select pk, text from screen_text")}
+        media = [
+            {**to_client(row), "screenText": texts.get(row["pk"], "")}
+            for row in conn.execute("select * from media order by saved_rank")
+        ]
         collections = [
             {
                 "id": row["id"],
@@ -202,5 +212,18 @@ def remove_membership(collection_id: str, pks: list[str]) -> None:
 
 def unsave_media(pk: str) -> None:
     with connect() as conn:
+        conn.execute("delete from screen_text where pk = ?", (pk,))
         conn.execute("delete from membership where media_pk = ?", (pk,))
         conn.execute("delete from media where pk = ?", (pk,))
+
+
+def media_without_screen_text() -> list[sqlite3.Row]:
+    with connect() as conn:
+        return conn.execute(
+            "select * from media where pk not in (select pk from screen_text) order by saved_rank"
+        ).fetchall()
+
+
+def save_screen_text(pk: str, text: str) -> None:
+    with connect() as conn:
+        conn.execute("insert or replace into screen_text (pk, text) values (?, ?)", (pk, text))

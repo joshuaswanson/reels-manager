@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-A Mac app for your saved Instagram reels. You can browse them, open and play them, download them, and move them between collections. It also shows the reels that are in no collection.
+A Mac app for your saved Instagram reels. You can browse them, open and play them, download them, and move them between collections. It also shows the reels that are in no collection. Search covers captions, accounts, and the text that appears on screen in each reel.
 
 ## Run
 

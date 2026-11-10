@@ -14,11 +14,13 @@ from starlette.background import BackgroundTask
 from . import browser_cookies, store
 from .instagram import CdnError, Instagram, InstagramError, SessionExpired, fetch_cdn, parse_cookie, summarize
 from .sync import SyncJob
+from .text_index import TextIndexJob
 
 STATIC_DIR = Path(__file__).parent / "static"
 
 app = FastAPI(title="Reels manager")
 sync_job = SyncJob()
+text_index_job = TextIndexJob()
 _client: Instagram | None = None
 _edit_lock = threading.Lock()
 
@@ -130,6 +132,18 @@ def start_sync():
 @app.get("/api/sync")
 def sync_status(since: int | None = None):
     return sync_job.snapshot(since)
+
+
+@app.post("/api/text-index")
+def start_text_index():
+    if not sync_job.status["running"]:
+        text_index_job.start()
+    return text_index_job.snapshot(None)
+
+
+@app.get("/api/text-index")
+def text_index_status(since: int | None = None):
+    return text_index_job.snapshot(since)
 
 
 def _require_collection(collection_id: str):
@@ -258,14 +272,10 @@ def _slide_or_404(row, slide: int) -> dict:
     return slides[slide]
 
 
-def _cache_stem(pk: str, slide: int) -> str:
-    return pk if slide == 0 else f"{pk}_{slide}"
-
-
 def _cached_file(pk: str, slide: int = 0, refresh_expired: bool = True) -> tuple[Path, str]:
     row = _media_or_404(pk)
-    extension = "mp4" if _slide_or_404(row, slide)["video_url"] else "jpg"
-    dest = store.FILES_DIR / f"{_cache_stem(pk, slide)}.{extension}"
+    dest = store.file_path(pk, slide, bool(_slide_or_404(row, slide)["video_url"]))
+    extension = dest.suffix.removeprefix(".")
     if dest.exists():
         return dest, extension
     with _download_lock(f"{pk}:{slide}"):
@@ -329,7 +339,7 @@ def _zip_response(entries: list[tuple[Path, str]], name: str) -> FileResponse:
 
 @app.get("/media/{pk}/thumb")
 def thumbnail(pk: str, slide: int = 0):
-    dest = store.THUMBS_DIR / f"{_cache_stem(pk, slide)}.jpg"
+    dest = store.THUMBS_DIR / store.file_path(pk, slide, False).name
     if not dest.exists():
         thumb_url = _slide_or_404(_media_or_404(pk), slide)["thumb_url"]
         if not thumb_url:
