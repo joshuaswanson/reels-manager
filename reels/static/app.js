@@ -357,6 +357,17 @@ function downloadMany(pks, name) {
   form.remove();
 }
 
+const instagramUrl = (m) => `https://www.instagram.com/${m.isReel ? "reel" : "p"}/${m.code}/`;
+
+async function copyLink(m) {
+  try {
+    await navigator.clipboard.writeText(instagramUrl(m));
+    toast("Link copied");
+  } catch {
+    toast("Could not copy the link.", { error: true });
+  }
+}
+
 function saveFrame(m, video) {
   if (!video.videoWidth) return toast("The video has not loaded a frame yet.", { error: true });
   const canvas = h("canvas", { width: video.videoWidth, height: video.videoHeight });
@@ -1210,6 +1221,7 @@ const ICON_PATHS = {
   slides: "M8 4 H18 A2 2 0 0 1 20 6 V16 M4 8 H14 A2 2 0 0 1 16 10 V20 H6 A2 2 0 0 1 4 18 Z",
   download: "M12 4 V15 M7 10 L12 15 L17 10 M5 20 H19",
   bookmark: "M6 4 A1 1 0 0 1 7 3 H17 A1 1 0 0 1 18 4 V21 L12 16 L6 21 Z",
+  link: "M10 14 A4 4 0 0 0 15.66 14 L18.66 11 A4 4 0 0 0 13 5.34 L12 6.34 M14 10 A4 4 0 0 0 8.34 10 L5.34 13 A4 4 0 0 0 11 18.66 L12 17.66",
 };
 
 function icon(name) {
@@ -1589,10 +1601,15 @@ function renderViewer() {
             { type: "button", class: "btn btn-line btn-icon btn-unsave", "aria-label": "Unsave", title: "Unsave", onClick: () => unsavePosts([m.pk]) },
             icon("bookmark"),
           ),
+          m.code &&
+            h(
+              "button",
+              { type: "button", class: "btn btn-line btn-icon", "aria-label": "Copy link", title: "Copy link", onClick: () => copyLink(m) },
+              icon("link"),
+            ),
           m.slides[slide].isVideo &&
             h("button", { type: "button", class: "btn btn-line", onClick: () => saveFrame(m, media) }, "Save frame"),
-          m.code &&
-            h("a", { class: "btn btn-line", href: `https://www.instagram.com/reel/${m.code}/`, target: "_blank", rel: "noopener" }, "Open in Instagram"),
+          m.code && h("a", { class: "btn btn-line", href: instagramUrl(m), target: "_blank", rel: "noopener" }, "Open in Instagram"),
         ),
       ),
       h("button", { type: "button", class: "viewer-close", "aria-label": "Close", onClick: () => viewer.close() }, icon("close")),
